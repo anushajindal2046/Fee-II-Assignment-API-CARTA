@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Product Display</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #00000041;
+            margin: 0;
+            padding: 20px;
+            text-align: center;
+        }
+
+        .cart-icon {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            font-size: 24px;
+            cursor: pointer;
+            color: #333;
+        }
+
+        .cart-icon:hover {
+            color: #28a745;
+        }
+
+        button {
+            background-color: #28a745;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            font-size: 16px;
+            cursor: pointer;
+            border-radius: 5px;
+            margin-bottom: 20px;
+        }
+
+        button:hover {
+            background-color: #218838;
+        }
+
+        table {
+            width: 80%;
+            margin: 0 auto;
+            border-collapse: collapse;
+            background-color: #fff;
+        }
+
+        th, td {
+            padding: 10px;
+            border: 1px solid #ddd;
+            text-align: center;
+        }
+
+        th {
+            background-color: #f2f2f2;
+        }
+
+        td img {
+            border-radius: 5px;
+        }
+
+        h1 {
+            color: #333;
+        }
+
+        .cart-btn {
+            background-color: #007bff;
+        }
+
+        .cart-btn:hover {
+            background-color: #0056b3;
+        }
+
+        #cartCount {
+            background-color: #ff0000;
+            color: #fff;
+            border-radius: 50%;
+            padding: 2px 6px;
+            font-size: 14px;
+            position: absolute;
+            top: 10px;
+            right: 10px;
+        }
+    </style>
+</head>
+
+<body>
+    <!-- Cart Icon -->
+    <div class="cart-icon" id="cartIcon">
+        🛒 Cart <span id="cartCount">0</span>
+    </div>
+
+    <h1>Product List</h1>
+    <button id="displayBtn">Display Products</button>
+    <table id="tableData" border="1">
+        <thead>
+            <tr>
+                <th>Title</th>
+                <th>Price</th>
+                <th>Image</th>
+                <th>Cart</th>
+            </tr>
+        </thead>
+        <tbody>
+            <!-- Data will be inserted here -->
+        </tbody>
+    </table>
+
+    <script>
+        let cart = []; // Array to store cart items
+
+        // Fetch products and display them
+        document.getElementById('displayBtn').addEventListener('click', () => {
+            fetch('https://fakestoreapi.com/products')
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error('Network response was not ok');
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    let tableBody = document.getElementById('tableData').getElementsByTagName('tbody')[0];
+                    let rows = '';
+
+                    data.forEach(product => {
+                        rows += `<tr>
+                            <td>${product.title}</td>
+                            <td>$${product.price.toFixed(2)}</td>
+                            <td><img src="${product.image}" alt="${product.title}" width="50"></td>
+                            <td><button class="cart-btn" onclick="addToCart(${product.id}, '${product.title}', ${product.price})">Add to Cart</button></td>
+                        </tr>`;
+                    });
+                    tableBody.innerHTML = rows;
+                })
+                .catch(error => {
+                    console.error('There has been a problem with your fetch operation:', error);
+                });
+        });
+
+        // Function to handle adding to cart
+        function addToCart(productId, title, price) {
+            // Check if the product is already in the cart
+            const existingProduct = cart.find(item => item.productId === productId);
+
+            if (existingProduct) {
+                // If the product is already in the cart, increase the quantity
+                existingProduct.quantity += 1;
+            } else {
+                // Otherwise, add the new product to the cart
+                cart.push({ productId, title, price, quantity: 1 });
+            }
+
+            // Update the cart in the UI
+            updateCartUI();
+        }
+
+        // Function to update the cart UI
+        function updateCartUI() {
+            let totalItems = 0;
+
+            cart.forEach(item => {
+                totalItems += item.quantity;
+            });
+
+            document.getElementById('cartCount').innerText = totalItems;
+
+            // Store the cart in localStorage for the cart page
+            localStorage.setItem('cart', JSON.stringify(cart));
+        }
+
+        // Redirect to the cart page on cart icon click
+        document.getElementById('cartIcon').addEventListener('click', () => {
+            window.location.href = 'cart.html'; // Redirect to cart.html
+        });
+    </script>
+</body>
+
+</html>
